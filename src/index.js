@@ -1,14 +1,14 @@
 import dotenv from 'dotenv';
-
 dotenv.config({ path: './env' });
+import { DB_NAME } from './constants.js';
 import express from 'express'
 import connectDB from './db/index.js';
+import mongoose from 'mongoose';
 
 const app = express();
 const PORT = process.env.PORT||3000;
 
-console.log('MONGODB_URI:',process.env.MONGODB_URI);
-console.log('DB_NAME:',process.env.DB_NAME);
+
 
 const startserver = async()=>{
     await connectDB();
@@ -18,6 +18,8 @@ const startserver = async()=>{
         
     })
 }
+console.log('MONGODB_URI:',process.env.MONGODB_URI);
+console.log('DB_NAME:',DB_NAME);
 startserver();
 
 

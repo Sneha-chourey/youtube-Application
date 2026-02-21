@@ -11,17 +11,25 @@ const PORT = process.env.PORT||3000;
 
 
 const startserver = async()=>{
-    await connectDB();
-
-    app.listen(PORT,()=>{
+    try{
+    await connectDB()
+    
+        app.listen(PORT,()=>{
         console.log(`server is running on port ${PORT}`);
         
     })
 }
+    catch(err){
+        console.log("MONGO DB connection failed !!! ",err);
+        
+    }
+}
+
+    
+
 console.log('MONGODB_URI:',process.env.MONGODB_URI);
 console.log('DB_NAME:',DB_NAME);
-startserver();
-
+startserver()
 
 
 
@@ -57,4 +65,4 @@ const app = express();
         throw err
     }
 })()
-    */
+*/

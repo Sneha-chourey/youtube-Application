@@ -1,11 +1,10 @@
 import dotenv from 'dotenv';
 dotenv.config({ path: './env' });
 import { DB_NAME } from './constants.js';
-import express from 'express'
 import connectDB from './db/index.js';
 import mongoose from 'mongoose';
+import {app} from './app.js'
 
-const app = express();
 const PORT = process.env.PORT||3000;
 
 const startserver = async()=>{

@@ -1,5 +1,5 @@
 import {Router} from "express";
-import { registerUser } from "../controllers/user.controllers.js";
+import { logoutUser, registerUser } from "../controllers/user.controllers.js";
 import { upload } from "../middlewares/multer.middleware.js";
 const router = Router()
 console.log("🔥 user.routes.js loaded");
@@ -17,4 +17,7 @@ router.route("/register").post(
 // router.post("/register", (req, res) => {
 //     res.json({ test: "route working" });
 // });
+router.route("/login").post(loginUser)
+// secured routes
+router.route("/logout").post(verifyJWT,logoutUser);
 export default router

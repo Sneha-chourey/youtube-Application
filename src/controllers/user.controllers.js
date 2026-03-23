@@ -7,6 +7,9 @@ import jwt from "jsonwebtoken"
 const generateAccessAndRefreshTokens= async(userId)=>{
   try {
     const user = await User.findById(userId)
+    if(!user){
+  throw new ApiError(404,"User not found")
+}
     const accessToken = user.generateAccessToken()
     const refreshToken = user.generateRefreshToken()
     user.refreshToken=refreshToken
@@ -43,7 +46,7 @@ const registerUser = asyncHandler(async(req,res)=>{
     if(existedUser){
         throw new ApiError(409,"user with email or username already exists")
     }
-    const avatarLocalPath =  req.files?.avatar[0]?.path;
+    const avatarLocalPath =  req.files?.avatar?.[0]?.path;
     // const coverImageLocalPath =  req.files?.coverImage[0]?.path;
 
     let coverImageLocalPath;

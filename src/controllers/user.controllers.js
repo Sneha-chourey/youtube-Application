@@ -54,8 +54,12 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Avatar image file is required")
   }
 
-  const avatar = await uploadOnCloudinary(avatarLocalPath)
+ let avatar
+  try {
+  avatar = await uploadOnCloudinary(avatarLocalPath)
+} finally {
   await fs.unlink(avatarLocalPath).catch(()=>{})
+}
   const coverImage = coverImageLocalPath ? await uploadOnCloudinary(coverImageLocalPath) : null
 if (coverImageLocalPath) {
   await fs.unlink(coverImageLocalPath).catch(()=>{})
@@ -115,7 +119,8 @@ const loginUser = asyncHandler(async (req, res) => {
 
   const options = {
     httpOnly: true,
-    secure: true
+    secure: process.env.NODE_ENV==="production",
+    sameSite: "strict"
   }
 
   return res
@@ -144,7 +149,8 @@ const logoutUser = asyncHandler(async (req, res) => {
 
   const options = {
     httpOnly: true,
-    secure: true
+    secure: process.env.NODE_ENV==="production",
+    sameSite: "strict"
   }
 
   return res
@@ -179,7 +185,8 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
     const options = {
       httpOnly: true,
-      secure: true
+      secure: process.env.NODE_ENV==="production",
+      sameSite: "strict"
     }
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id)
@@ -191,7 +198,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       .json(
         new ApiResponse(
           200,
-          { accessToken, refreshToken },
+          { success:true},
           "Access token refreshed successfully"
         )
       )
@@ -269,6 +276,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
   }
 
   const avatar = await uploadOnCloudinary(avatarLocalPath)
+  await fs.unlink(avatarLocalPath).catch(()=>{});
 
   if (!avatar || !avatar.url) {
     throw new ApiError(500, "Failed to upload avatar image")
@@ -297,6 +305,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
   }
 
   const coverImage = await uploadOnCloudinary(coverImageLocalPath)
+  await fs.unlink(coverImageLocalPath).catch(()=>{})
 
   if (!coverImage || !coverImage.url) {
     throw new ApiError(500, "Failed to upload cover image")
@@ -356,8 +365,8 @@ const getUserChannelProfile = asyncHandler(async(req,res)=>{
         },
         isSubscribed:{
           $cond:{
-            if:{$in:[
-  new mongoose.Types.ObjectId(req.user?._id),
+            if:{$in: [
+  new mongoose.Types.ObjectId(req.user._id),
   "$subscribers.subscriber"
 ]},
             then:true,
@@ -391,11 +400,17 @@ const getUserChannelProfile = asyncHandler(async(req,res)=>{
 })
 
 const getWatchHistory = asyncHandler(async(req,res)=>{
+  
+      if (!req.user?._id) {
+  throw new ApiError(401, "Unauthorized")
+}
   const user = await User.aggregate([
     {
-      $match:{
-        _id:new mongoose.Types.ObjectId(req.user?._id)
-      }
+
+$match: {
+  _id: new mongoose.Types.ObjectId(req.user._id)
+}
+    
     },
     {
       $lookup:{
@@ -438,8 +453,8 @@ const getWatchHistory = asyncHandler(async(req,res)=>{
   .json(
     new ApiResponse(
       200,
-      user[0].watchHistory||[],
-      "watch history fetched successfully"
+      user?.[0]?.watchHistory||[]
+      ,"watch history fetched successfully"
     )
   )
 })

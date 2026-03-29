@@ -34,6 +34,12 @@ const registerUser = asyncHandler(async (req, res) => {
   if ([fullName, email, username, password].some((field) => !field || field.trim() === "")) {
     throw new ApiError(400, "All required fields must be provided")
   }
+  if (!email.includes("@")) {
+  throw new ApiError(400, "Invalid email format")
+}
+if (password.length < 6) {
+  throw new ApiError(400, "Password must be at least 6 characters long")
+}
 
   const existedUser = await User.findOne({
     $or: [{ username }, { email }]
@@ -100,8 +106,11 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 
   const user = await User.findOne({
-    $or: [{ username }, { email }]
-  })
+  $or: [
+    { username: username?.toLowerCase() },
+    { email }
+  ]
+})
 
   if (!user) {
     throw new ApiError(404, "User not found")
@@ -251,6 +260,12 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
   if (!fullName || !email) {
     throw new ApiError(400, "Full name and email are required")
   }
+
+  const existingUser = await User.findOne({ email })
+
+if (existingUser && existingUser._id.toString() !== req.user._id.toString()) {
+  throw new ApiError(409, "Email already in use")
+}
 
   const user = await User.findByIdAndUpdate(
     req.user?._id,

@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config({ path: './env' });
 
 import fs from "fs"
-import { console } from "inspector";
+
 
 cloudinary.config({ 
   cloud_name: process.env.CLOUD_NAME, 
@@ -20,7 +20,7 @@ const uploadOnCloudinary = async (localFilePath)=>{
         })
         // file has been uploaded successfully
         console.log("file is uploaded on cloudinary ",response.url);
-        fs.unlinkSync(localFilePath) // delete after success
+        // delete after success
         return response;
     }
     catch(error){

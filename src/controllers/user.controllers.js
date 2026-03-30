@@ -80,7 +80,7 @@ if (coverImageLocalPath) {
     coverImage: coverImage?.url || "",
     email,
     password,
-    username: username.toLowerCase()
+    username: username.trim().toLowerCase()
   })
 
   const createdUser = await User.findById(user._id).select("-password -refreshToken")
@@ -207,7 +207,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       .json(
         new ApiResponse(
           200,
-          { success:true},
+           { accessToken, refreshToken },
           "Access token refreshed successfully"
         )
       )
@@ -227,6 +227,9 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
   if (newPassword !== confirmPassword) {
     throw new ApiError(400, "New password and confirm password do not match")
   }
+  if (newPassword.length < 6) {
+  throw new ApiError(400, "Password must be at least 6 characters long")
+}
 
   const user = await User.findById(req.user?._id)
 
